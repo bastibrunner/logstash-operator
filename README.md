@@ -1,0 +1,4 @@
+# logstash-operator
+
+WIP
+
