@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ name }}-logstash-operator-pipelines
+  labels:
+    app: "logstash"
+data:
+  pipelines.yml: |
+    {% for item in pipelines %}
+    - pipeline.id: {{ item }}
+      path.config: "/usr/share/logstash/pipeline-{{ item }}"
+    {% endfor %}

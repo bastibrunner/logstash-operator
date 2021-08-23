@@ -1,0 +1,112 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ name }}
+  labels:
+    app: "{{ name }}"
+spec:
+  serviceName: {{ name }}-headless
+  selector:
+    matchLabels:
+      app: "{{ name }}"
+  replicas: {{ replicas }}
+  podManagementPolicy: Parallel
+  updateStrategy:
+    type: RollingUpdate
+  volumeClaimTemplates:
+  - metadata:
+      name: {{ name }}-data
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 1Gi
+  template:
+    metadata:
+      name: "{{ name }}"
+      labels:
+        app: "{{ name }}"
+      annotations:
+    spec:
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - "{{ name }}"
+            topologyKey: kubernetes.io/hostname
+      terminationGracePeriodSeconds: 120
+      volumes:
+      - name: {{ name }}-config
+        configMap:
+          name: {{ name }}-logstash-operator-config
+      - name: {{ name }}-pipelines
+        configMap:
+          name: {{ name }}-logstash-operator-pipelines
+      {% for item in pipelines %}
+      - name: {{ name }}-pipeline-{{ item }}
+        configMap:
+          name: logstash-operator-pipeline-{{ item }}
+      {% endfor %}
+
+      containers:
+      - name: "logstash"
+        securityContext:
+          capabilities:
+            drop:
+            - ALL
+          runAsNonRoot: true
+          runAsUser: 1000
+        image: "docker.elastic.co/logstash/logstash:8.0.0-SNAPSHOT"
+        imagePullPolicy: "IfNotPresent"
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: 300
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 5
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          successThreshold: 3
+          timeoutSeconds: 5
+        ports:
+        - name: http
+          containerPort: 9600
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 1536Mi
+          requests:
+            cpu: 100m
+            memory: 1536Mi
+        env:
+          - name: LS_JAVA_OPTS
+            value: "-Xmx1g -Xms1g"
+        volumeMounts:
+          - name: "{{ name }}-data"
+            mountPath: /usr/share/logstash/data
+          - name: "{{ name }}-config"
+            mountPath: /opt/logstash/config/logstash.yml
+            subPath: logstash.yml
+          - name: "{{ name }}-pipelines"
+            mountPath: /opt/logstash/config/pipelines.yml
+            subPath: pipelines.yml
+          {% for item in pipelines %}
+          - name: "{{ name }}-pipeline-{{ item }}"
+            mountPath: /opt/logstash/pipeline-{{ item }}
+          {% endfor %}
