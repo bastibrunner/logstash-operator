@@ -6,7 +6,6 @@ spec:
   replicas: 2
   pipelines: 
     - default
-    - dev
   config:
     queue:
       type: persisted

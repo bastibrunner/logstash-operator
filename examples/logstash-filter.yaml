@@ -3,15 +3,8 @@ kind: logstash-filter
 metadata:
   name: filter
 spec:
-  filter: |
-    input {
-      beats {
-        port => 5044
-      }
-    }
-
-    output {
-      stdout {
-        codec => rubydebug
-      }
+  order: 10
+  data: |
+    grok {
+      match => { "message" => "%{GREEDYDATA}" }
     }

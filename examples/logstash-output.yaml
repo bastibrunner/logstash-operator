@@ -1,0 +1,9 @@
+apiVersion: logstash-operator.qalo.de/v1
+kind: logstash-output
+metadata:
+  name: output
+spec:
+  data: |
+    stdout {
+      codec => rubydebug
+    }

@@ -1,0 +1,10 @@
+apiVersion: logstash-operator.qalo.de/v1
+kind: logstash-input
+metadata:
+  name: input
+spec:
+  port: 5044
+  data: |
+    beats {
+      port => 5044
+    }

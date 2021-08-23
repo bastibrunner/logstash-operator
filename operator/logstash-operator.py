@@ -93,31 +93,39 @@ def update_statefulset_fn(spec, status, namespace, logger, **kwargs):
     logger.info(f"Statefulset child is updated: {obj.metadata.name}")
 
 
-@kopf.on.create('logstash-filter')
-def create_filter_fn(spec, name, namespace, logger, **kwargs):
-    logger.info(f"Creating: {name}")
-
-    filter = spec.get('filter')
+@kopf.on.create('logstash-filter',param={'type':'filter','action':'create'})
+@kopf.on.create('logstash-input',param={'type':'input','action':'create'})
+@kopf.on.create('logstash-output',param={'type':'output','action':'create'})
+@kopf.on.update('logstash-filter',param={'type':'filter','action':'update'})
+@kopf.on.update('logstash-input',param={'type':'input','action':'update'})
+@kopf.on.update('logstash-output',param={'type':'output','action':'update'})
+@kopf.on.delete('logstash-filter',param={'type':'filter','action':'delete'})
+@kopf.on.delete('logstash-input',param={'type':'input','action':'delete'})
+@kopf.on.delete('logstash-output',param={'type':'output','action':'delete'})
+def create_filter_fn(param,spec, name, namespace, logger, **kwargs):
+    logger.info(f"{param['action']}: {name}")
+ 
     pipeline = spec.get('pipeline')
     configmapname = "logstash-operator-pipeline-"+pipeline
-    if not filter:
-        raise kopf.PermanentError(f"filter must be set. Got {filter!r}.")
-    if not pipeline:
-        raise kopf.PermanentError(f"pipeline must be set. Got {pipeline!r}.")
-
+ 
     api = kubernetes.client.CoreV1Api()
+    if (param['action'] == 'create'):
 
-    try: 
-        api_response = api.read_namespaced_config_map(configmapname, namespace, pretty="true")
-    except ApiException as e:
-        if (e.status == 404):
-            logger.info("Configmap not found, creating")
-            create_configmap(configmapname,namespace)
-        else:
-            logger.error("Exception when calling CoreV1Api->read_namespaced_config_map: %s\n" % e)
+        try: 
+            api_response = api.read_namespaced_config_map(configmapname, namespace, pretty="true")
+        except ApiException as e:
+            if (e.status == 404):
+                logger.info("Configmap not found, creating")
+                create_configmap(configmapname,namespace)
+            else:
+                logger.error("Exception when calling CoreV1Api->read_namespaced_config_map: %s\n" % e)
 
     key = name+".conf"
-    config_patch = {'data': {key: filter}}
+
+    if (param['action'] == 'create' or param['action'] == 'update'):
+        config_patch = {'data': {key: param['type']+'{\n'+ spec.get('data') + '\n}'}}
+    if (param['action'] == 'delete'):
+        config_patch = [{'op': 'remove','path': '/data/'+key }]
 
     obj = api.patch_namespaced_config_map(
         namespace=namespace,
@@ -125,46 +133,7 @@ def create_filter_fn(spec, name, namespace, logger, **kwargs):
         body=config_patch,
     )
 
-    logger.info(f"Configmap is updated: {obj.metadata.name}, created {key}")
+    logger.info(f"Configmap is updated: {obj.metadata.name}, {param['action']} {key}")
     return {'configmap-key': key,'configmap-name':configmapname}
 
-@kopf.on.update('logstash-filter')
-def update_filter_fn(spec, status, namespace, logger, **kwargs):
-    filter = spec.get('filter')
-    pipeline = spec.get('pipeline')
-    if not filter:
-        raise kopf.PermanentError(f"filter must be set. Got {filter!r}.")
-    if not pipeline:
-        raise kopf.PermanentError(f"pipeline must be set. Got {pipeline!r}.")
 
-    api = kubernetes.client.CoreV1Api()
-
-    key = status['create_filter_fn']['configmap-key']
-    configmapname = status['create_filter_fn']['configmap-name']
-    config_patch = {'data': { key: filter}}
-
-    obj = api.patch_namespaced_config_map(
-        namespace=namespace,
-        name=configmapname,
-        body=config_patch,
-    )
-
-    logger.info(f"Configmap is updated: {obj.metadata.name}, {key}")
-
-
-@kopf.on.delete('logstash-filter')
-def delete_filter_fn(status, namespace, logger, **kwargs):
-
-    key = status['create_filter_fn']['configmap-key']
-    configmapname = status['create_filter_fn']['configmap-name']
-    config_patch = [{'op': 'remove','path': '/data/'+key }]
-    logger.info(f"Deleting: {key}")
-
-    api = kubernetes.client.CoreV1Api()
-    obj = api.patch_namespaced_config_map(
-        namespace=namespace,
-        name=configmapname,
-        body=config_patch,
-    )
-
-    logger.info(f"Configmap is updated: {obj.metadata.name}, deleted {key}")

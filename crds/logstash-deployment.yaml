@@ -32,6 +32,9 @@ spec:
                     pattern: "^[a-z0-9]+(-[a-z0-9]+)*$"
                   default: 
                   - default
+                version: 
+                  type: string
+                  default: 8.0.0-SNAPSHOT
                 config:
                   type: object
                   properties:
