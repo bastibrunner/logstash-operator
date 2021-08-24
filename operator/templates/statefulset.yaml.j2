@@ -65,8 +65,7 @@ spec:
           runAsNonRoot: true
           runAsUser: 1000
         image: "{{ image }}"
-        {# command: ["logstash"]
-        args: ["--config.reload.automatic"] #}
+        args: ["--config.reload.automatic"] 
         #TODO: variable during deployment of operator -> should be chart.appversion, also moved from 8 to 7.xx due to latest stable release
         imagePullPolicy: "IfNotPresent"
         livenessProbe:
