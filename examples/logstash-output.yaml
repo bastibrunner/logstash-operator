@@ -1,11 +1,36 @@
 apiVersion: logstash-operator.qalo.de/v1
 kind: logstash-output
 metadata:
-  name: output
+  name: output1
   labels:
     nanocosmos.de/pipeline: pipeline1
 spec:
   data: |
     stdout {
-      codec => rubydebug
+       codec => rubydebug
     }
+---
+apiVersion: logstash-operator.qalo.de/v1
+kind: logstash-output
+metadata:
+  name: output2
+  labels:
+    nanocosmos.de/pipeline: pipeline1
+spec:
+  data: |
+    stdout {
+       codec => rubydebug
+    }
+---
+apiVersion: logstash-operator.qalo.de/v1
+kind: logstash-output
+metadata:
+  name: output3
+  labels:
+    nanocosmos.de/pipeline: pipeline2
+spec:
+  data: |
+    stdout {
+       codec => rubydebug
+    }
+---

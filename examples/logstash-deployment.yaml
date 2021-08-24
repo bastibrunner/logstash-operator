@@ -1,11 +1,24 @@
 apiVersion: logstash-operator.qalo.de/v1
 kind: logstash-deployment
 metadata:
-  name: logstash
+  name: logstash1
 spec:
   replicas: 2
   pipelines: 
-    - default
+    - pipeline1
+    - pipeline2
+  config:
+    queue:
+      type: persisted
+---
+apiVersion: logstash-operator.qalo.de/v1
+kind: logstash-deployment
+metadata:
+  name: logstash2
+spec:
+  replicas: 1
+  pipelines: 
+    - pipeline1
   config:
     queue:
       type: persisted

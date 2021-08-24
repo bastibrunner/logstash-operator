@@ -1,11 +1,37 @@
 apiVersion: logstash-operator.qalo.de/v1
 kind: logstash-filter
 metadata:
-  name: filter
+  name: filter1
   labels:
     nanocosmos.de/pipeline: pipeline1
 spec:
   order: 10
+  data: |
+    grok {
+      match => { "message" => "%{GREEDYDATA}" }
+    }
+---
+apiVersion: logstash-operator.qalo.de/v1
+kind: logstash-filter
+metadata:
+  name: filter2
+  labels:
+    nanocosmos.de/pipeline: pipeline1
+spec:
+  order: 20
+  data: |
+    grok {
+      match => { "message" => "%{GREEDYDATA}" }
+    }
+---
+apiVersion: logstash-operator.qalo.de/v1
+kind: logstash-filter
+metadata:
+  name: filter3
+  labels:
+    nanocosmos.de/pipeline: pipeline2
+spec:
+  order: 20
   data: |
     grok {
       match => { "message" => "%{GREEDYDATA}" }

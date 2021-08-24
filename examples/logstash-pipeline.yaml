@@ -4,3 +4,10 @@ metadata:
   name: pipeline1
 spec:
   selector: nanocosmos.de/pipeline=pipeline1
+---
+apiVersion: logstash-operator.qalo.de/v1
+kind: logstash-pipeline
+metadata:
+  name: pipeline2
+spec:
+  selector: nanocosmos.de/pipeline=pipeline2
