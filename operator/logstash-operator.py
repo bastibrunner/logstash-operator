@@ -32,6 +32,7 @@ def create_statefulset_fn(spec, name, namespace, logger, **kwargs):
         raise kopf.PermanentError(f"Replicas must be set. Got {replicas!r}.")
     pipelines = spec.get('pipelines')
     logstashconfig = spec.get('config')
+    image = spec.get('image')
 
     templateLoader = jinja2.FileSystemLoader(searchpath="./templates/")
     templateEnv = jinja2.Environment(loader=templateLoader)
@@ -61,7 +62,7 @@ def create_statefulset_fn(spec, name, namespace, logger, **kwargs):
 
     TEMPLATE_FILE = "statefulset.yaml.j2"
     template = templateEnv.get_template(TEMPLATE_FILE)
-    text = template.render(name=name, replicas=replicas, pipelines=pipelines)
+    text = template.render(name=name, replicas=replicas, pipelines=pipelines, image=image)
     data = yaml.safe_load(text)
     kopf.adopt(data)
     api = kubernetes.client.AppsV1Api()
