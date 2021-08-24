@@ -13,6 +13,7 @@ def create_configmap(name,namespace):
     template = templateEnv.get_template(TEMPLATE_FILE)
     text = template.render(name=name)
     data = yaml.safe_load(text)
+    kopf.adopt(data)
 
     api = kubernetes.client.CoreV1Api()
         
@@ -93,6 +94,66 @@ def update_statefulset_fn(spec, status, namespace, logger, **kwargs):
     logger.info(f"Statefulset child is updated: {obj.metadata.name}")
 
 
+@kopf.on.create('logstash-pipeline',param={'type':'pipeline','action':'create'})
+@kopf.on.update('logstash-pipeline',param={'type':'pipeline','action':'update'})
+def create_pipeline_fn(param,spec, name, namespace, logger, **kwargs):
+    logger.info(f"{param['action']}: {name}")
+    configmapname=name
+    api = kubernetes.client.CoreV1Api()
+    if (param['action'] == 'create'):
+        try: 
+            api_response = api.read_namespaced_config_map(configmapname, namespace, pretty="true")
+        except ApiException as e:
+            if (e.status == 404):
+                logger.info("Configmap not found, creating")
+                create_configmap(configmapname,namespace)
+            else:
+                logger.error("Exception when calling CoreV1Api->read_namespaced_config_map: %s\n" % e)
+    
+    coreapi = kubernetes.client.CoreV1Api()    
+    customobjectsapi = kubernetes.client.CustomObjectsApi()
+
+    customobjectsapi_response = customobjectsapi.list_namespaced_custom_object("logstash-operator.qalo.de","v1",namespace,"logstash-filters", pretty="true", label_selector=spec.get('selector'))
+    for item in customobjectsapi_response['items']:
+        key = str(item['spec']['order'])+'-'+item['metadata']['name']+".conf"
+
+        if (param['action'] == 'create' or param['action'] == 'update'):
+            config_patch = {'data': {key: 'filter {\n'+ item['spec']['data'] + '\n}'}}
+
+        obj = coreapi.patch_namespaced_config_map(
+            namespace=namespace,
+            name=configmapname,
+            body=config_patch,
+        )
+
+        logger.info(f"Updated: {obj.metadata.name}, {param['action']} {key}")
+
+    customobjectsapi_response = customobjectsapi.list_namespaced_custom_object("logstash-operator.qalo.de","v1",namespace,"logstash-inputs", pretty="true", label_selector=spec.get('selector'))
+    key = "input.conf"
+    t = jinja2.Template("input {\n {% for item in items %}{{ item.spec.data }}{% endfor %} \n}")
+    data = t.render(items=customobjectsapi_response['items'])
+    patch = {'data': {key: data}}
+
+    obj = coreapi.patch_namespaced_config_map(
+        namespace=namespace,
+        name=configmapname,
+        body=patch,
+    )
+    logger.info(f"Updated: {obj.metadata.name}, {param['action']} {key}")
+
+    customobjectsapi_response = customobjectsapi.list_namespaced_custom_object("logstash-operator.qalo.de","v1",namespace,"logstash-outputs", pretty="true", label_selector=spec.get('selector'))
+    key = "output.conf"
+    t = jinja2.Template("output {\n {% for item in items %}{{ item.spec.data }}{% endfor %} \n}")
+    data = t.render(items=customobjectsapi_response['items'])
+    patch = {'data': {key: data}}
+
+    obj = coreapi.patch_namespaced_config_map(
+        namespace=namespace,
+        name=configmapname,
+        body=patch,
+    )
+    logger.info(f"Updated: {obj.metadata.name}, {param['action']} {key}")
+
 @kopf.on.create('logstash-filter',param={'type':'filter','action':'create'})
 @kopf.on.create('logstash-input',param={'type':'input','action':'create'})
 @kopf.on.create('logstash-output',param={'type':'output','action':'create'})
@@ -102,38 +163,17 @@ def update_statefulset_fn(spec, status, namespace, logger, **kwargs):
 @kopf.on.delete('logstash-filter',param={'type':'filter','action':'delete'})
 @kopf.on.delete('logstash-input',param={'type':'input','action':'delete'})
 @kopf.on.delete('logstash-output',param={'type':'output','action':'delete'})
-def create_filter_fn(param,spec, name, namespace, logger, **kwargs):
+def pipelineelement_fn(param,spec, name, namespace, logger, **kwargs):
     logger.info(f"{param['action']}: {name}")
  
-    pipeline = spec.get('pipeline')
-    configmapname = "logstash-operator-pipeline-"+pipeline
- 
-    api = kubernetes.client.CoreV1Api()
-    if (param['action'] == 'create'):
+    customobjectsapi = kubernetes.client.CustomObjectsApi()
+    customobjectsapi_response = customobjectsapi.list_namespaced_custom_object("logstash-operator.qalo.de","v1",namespace,"logstash-pipelines", pretty="true")
+    for item in customobjectsapi_response['items']:
+        patchversion = int(item['metadata'].get('annotations',{}).get('logstash-operator.qalo.de/patchversion',"0"))+1
+        patch = {'metadata':{'annotations':{'logstash-operator.qalo.de/patchversion' : str(patchversion)}}}
+        logger.info(f"Trigger update on pipeline {item['metadata']['name']}, patchversion {patchversion}")
 
-        try: 
-            api_response = api.read_namespaced_config_map(configmapname, namespace, pretty="true")
-        except ApiException as e:
-            if (e.status == 404):
-                logger.info("Configmap not found, creating")
-                create_configmap(configmapname,namespace)
-            else:
-                logger.error("Exception when calling CoreV1Api->read_namespaced_config_map: %s\n" % e)
-
-    key = name+".conf"
-
-    if (param['action'] == 'create' or param['action'] == 'update'):
-        config_patch = {'data': {key: param['type']+'{\n'+ spec.get('data') + '\n}'}}
-    if (param['action'] == 'delete'):
-        config_patch = [{'op': 'remove','path': '/data/'+key }]
-
-    obj = api.patch_namespaced_config_map(
-        namespace=namespace,
-        name=configmapname,
-        body=config_patch,
-    )
-
-    logger.info(f"Configmap is updated: {obj.metadata.name}, {param['action']} {key}")
-    return {'configmap-key': key,'configmap-name':configmapname}
-
-
+        obj = customobjectsapi.patch_namespaced_custom_object("logstash-operator.qalo.de","v1",namespace,"logstash-pipelines",
+            name=item['metadata']['name'],
+            body=patch,
+        )

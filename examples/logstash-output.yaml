@@ -2,6 +2,8 @@ apiVersion: logstash-operator.qalo.de/v1
 kind: logstash-output
 metadata:
   name: output
+  labels:
+    nanocosmos.de/pipeline: pipeline1
 spec:
   data: |
     stdout {

@@ -2,6 +2,8 @@ apiVersion: logstash-operator.qalo.de/v1
 kind: logstash-filter
 metadata:
   name: filter
+  labels:
+    nanocosmos.de/pipeline: pipeline1
 spec:
   order: 10
   data: |

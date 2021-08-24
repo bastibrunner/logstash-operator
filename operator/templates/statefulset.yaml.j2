@@ -53,7 +53,7 @@ spec:
       {% for item in pipelines %}
       - name: {{ name }}-pipeline-{{ item }}
         configMap:
-          name: logstash-operator-pipeline-{{ item }}
+          name: {{ item }}
       {% endfor %}
 
       containers:
@@ -65,6 +65,8 @@ spec:
           runAsNonRoot: true
           runAsUser: 1000
         image: "docker.elastic.co/logstash/logstash:7.14.0"
+        {# command: ["logstash"]
+        args: ["--config.reload.automatic"] #}
         #TODO: variable during deployment of operator -> should be chart.appversion, also moved from 8 to 7.xx due to latest stable release
         imagePullPolicy: "IfNotPresent"
         livenessProbe:

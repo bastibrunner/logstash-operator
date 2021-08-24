@@ -2,6 +2,8 @@ apiVersion: logstash-operator.qalo.de/v1
 kind: logstash-input
 metadata:
   name: input
+  labels:
+    nanocosmos.de/pipeline: pipeline1
 spec:
   port: 5044
   data: |

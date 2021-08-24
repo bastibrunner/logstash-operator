@@ -25,12 +25,6 @@ spec:
               properties:
                 data:
                   type: string
-                pipeline:
-                  type: string
-                  default: "default"
-                order: 
-                  type: integer
-                  default: 50
             status:
               type: object
               x-kubernetes-preserve-unknown-fields: true
