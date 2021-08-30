@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: {{ name }}
 spec:
-  type: NodePort
+  type: {{ type }}
   selector:
     app: {{ app }}
   ports:
