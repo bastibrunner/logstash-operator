@@ -1,0 +1,30 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: "logstash"
+  name: logstash-operator-role-namespaced
+rules:
+
+  - apiGroups: [kopf.dev]
+    resources: [kopfpeerings]
+    verbs: [list, watch, patch, get]
+
+  - apiGroups: [""]
+    resources: [events]
+    verbs: [create]
+
+  - apiGroups: [logstash-operator.qalo.de]
+    resources: ["*"]
+    verbs: [list, watch, patch]
+
+  - apiGroups: [batch, extensions]
+    resources: [jobs]
+    verbs: [create]
+
+  - apiGroups: [""]
+    resources: [configmaps,services]
+    verbs: [get,create,patch]
+
+  - apiGroups: [apps]
+    resources: [statefulsets]
+    verbs: [create,patch]
