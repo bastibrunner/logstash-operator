@@ -14,7 +14,7 @@ jobs:
       chmod +x /usr/bin/helm
     run: helm package logstash-operator
   - name: version
-    run: echo ::set-output name=VERSION::${cat logstash-operator/Chart.yaml | grep version: | sed 's/.* //'}
+    run: echo ::set-output name=VERSION::$(cat logstash-operator/Chart.yaml | grep version: | sed 's/.* //')
     id: version
   - name: release
     uses: actions/create-release@v1
