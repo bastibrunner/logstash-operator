@@ -6,16 +6,17 @@ on:
       - '*'
       
 jobs:
+
+  - name: version
+    run: echo ::set-output name=version::${GITHUB_REF/refs\/tags\//}
+    id: version
   - name: build
     working-directory: ./deploy/
     run: |
       curl -L https://get.helm.sh/helm-v3.4.1-linux-amd64.tar.gz |tar xvz
       mv linux-amd64/helm /usr/bin/helm
       chmod +x /usr/bin/helm
-    run: helm package logstash-operator
-  - name: version
-    run: echo "::set-output name=version::$(cat logstash-operator/Chart.yaml | grep version: | sed 's/.* //')"
-    id: version
+      helm package --app-version ${{ steps.version.outputs.version }} logstash-operator
   - name: release
     uses: actions/create-release@v1
     id: create_release
