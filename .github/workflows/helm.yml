@@ -16,7 +16,7 @@ jobs:
       id: version
     - name: build package
       working-directory: deploy
-      run: helm package --app-version ${{ steps.version.outputs.version }} logstash-operator
+      run: helm package --version ${{ steps.version.outputs.version }} logstash-operator
     - name: create release
       uses: actions/create-release@v1
       id: create_release
