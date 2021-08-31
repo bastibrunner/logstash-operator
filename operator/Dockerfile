@@ -9,4 +9,4 @@ COPY . .
 
 EXPOSE 80
 
-CMD [ "kopf", "run" , "--liveness=http://0.0.0.0:80/healthz" "logstash-operator.py"]
+CMD [ "kopf", "run", "--liveness=http://0.0.0.0:80/healthz", "logstash-operator.py"]
