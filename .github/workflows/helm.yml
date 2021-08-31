@@ -13,8 +13,7 @@ jobs:
       run: echo ::set-output name=version::${GITHUB_REF/refs\/tags\//}
       id: version
     - name: install dependencies
-      working-directory: deploy
-      run: curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 && chmod 700 get_helm.sh && ./get_helm.sh
+      run: sudo apt-get install curl
     - name: build package
       working-directory: ./deploy
       run: helm package --app-version ${{ steps.version.outputs.version }} logstash-operator
