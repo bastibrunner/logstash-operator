@@ -9,11 +9,11 @@ jobs:
   buildAndPublish:
     runs-on: ubuntu-latest
     steps:
+    - name: checkout
+      uses: actions/checkout@v1
     - name: version
       run: echo ::set-output name=version::${GITHUB_REF/refs\/tags\//}
       id: version
-    - name: install dependencies
-      run: curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 && chmod 700 get_helm.sh && ./get_helm.sh
     - name: build package
       working-directory: deploy
       run: helm package --app-version ${{ steps.version.outputs.version }} logstash-operator
