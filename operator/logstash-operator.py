@@ -61,9 +61,9 @@ def create_statefulset_fn(param, spec, name, namespace, logger, **kwargs):
     TEMPLATE_FILE = "service.yaml.j2"
     template = templateEnv.get_template(TEMPLATE_FILE)
     for item in customobjectsapi_response['items']:
-        ports[item['metadata']['name']]=item['spec']['service']['port']
+        ports[item['spec']['service']['name']]=item['spec']['service']['port']
         servicename=name+"-"+item['metadata']['name']
-        text = template.render(name=servicename,app=name,port=item['spec']['service']['port'],portname=item['metadata']['name'],type=item['spec']['service']['type'])
+        text = template.render(name=servicename,app=name,port=item['spec']['service']['port'],portname=item['spec']['service']['name'],type=item['spec']['service']['type'])
         servicedata = yaml.safe_load(text)
         services[servicename]=servicedata
 
