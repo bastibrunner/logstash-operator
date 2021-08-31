@@ -11,8 +11,8 @@ spec:
     plural: logstash-patterns
     singular: logstash-pattern
     shortNames:
-      - lso
-      - lsos
+      - lpo
+      - lpos
   versions:
     - name: v1
       served: true
