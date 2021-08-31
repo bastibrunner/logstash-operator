@@ -34,3 +34,6 @@ rules:
     resources: [ statefulsets ]
     verbs: [ create,patch ]
 
+  - apiGroups: [""]
+    resources: [events]
+    verbs: [create]
