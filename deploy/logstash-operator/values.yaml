@@ -5,6 +5,7 @@
 replicaCount: 1
 
 namespace: ""
+installCRDs: true
 
 image:
   repository: 66runner/logstash-operator
