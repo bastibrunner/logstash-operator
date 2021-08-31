@@ -9,18 +9,15 @@ jobs:
   buildAndPublish:
     runs-on: ubuntu-latest
     steps:
+    - name: checkout
+      uses: actions/checkout@v1
     - name: version
       run: echo ::set-output name=version::${GITHUB_REF/refs\/tags\//}
       id: version
-    - name: build
-      working-directory: ./deploy/
-      run: |
-        sudo apt-get install curl
-        curl -L https://get.helm.sh/helm-v3.4.1-linux-amd64.tar.gz |tar xvz
-        mv linux-amd64/helm /usr/bin/helm
-        chmod +x /usr/bin/helm
-        helm package --app-version ${{ steps.version.outputs.version }} logstash-operator
-    - name: release
+    - name: build package
+      working-directory: deploy
+      run: helm package --version ${{ steps.version.outputs.version }} logstash-operator
+    - name: create release
       uses: actions/create-release@v1
       id: create_release
       with:
