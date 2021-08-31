@@ -6,34 +6,36 @@ on:
       - '*'
       
 jobs:
-
-  - name: version
-    run: echo ::set-output name=version::${GITHUB_REF/refs\/tags\//}
-    id: version
-  - name: build
-    working-directory: ./deploy/
-    run: |
-      curl -L https://get.helm.sh/helm-v3.4.1-linux-amd64.tar.gz |tar xvz
-      mv linux-amd64/helm /usr/bin/helm
-      chmod +x /usr/bin/helm
-      helm package --app-version ${{ steps.version.outputs.version }} logstash-operator
-  - name: release
-    uses: actions/create-release@v1
-    id: create_release
-    with:
-      draft: false
-      prerelease: false
-      release_name: ${{ steps.version.outputs.version }}
-      tag_name: ${{ github.ref }}
-      body_path: CHANGELOG.md
-    env:
-      GITHUB_TOKEN: ${{ github.token }}
-  - name: upload helm artifact
-    uses: actions/upload-release-asset@v1
-    env:
-      GITHUB_TOKEN: ${{ github.token }}
-    with:
-      upload_url: ${{ steps.create_release.outputs.upload_url }}
-      asset_path: ./deploy/logstash-operator-${{ steps.version.outputs.version }}.tgz
-      asset_name: logstash-operator-${{ steps.version.outputs.version }}.tgz
-      asset_content_type: application/gzip
+  buildAndPublish:
+    runs-on: ubuntu-latest
+    steps:
+    - name: version
+      run: echo ::set-output name=version::${GITHUB_REF/refs\/tags\//}
+      id: version
+    - name: build
+      working-directory: ./deploy/
+      run: |
+        curl -L https://get.helm.sh/helm-v3.4.1-linux-amd64.tar.gz |tar xvz
+        mv linux-amd64/helm /usr/bin/helm
+        chmod +x /usr/bin/helm
+        helm package --app-version ${{ steps.version.outputs.version }} logstash-operator
+    - name: release
+      uses: actions/create-release@v1
+      id: create_release
+      with:
+        draft: false
+        prerelease: false
+        release_name: ${{ steps.version.outputs.version }}
+        tag_name: ${{ github.ref }}
+        body_path: CHANGELOG.md
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+    - name: upload helm artifact
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./deploy/logstash-operator-${{ steps.version.outputs.version }}.tgz
+        asset_name: logstash-operator-${{ steps.version.outputs.version }}.tgz
+        asset_content_type: application/gzip
