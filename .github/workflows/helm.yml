@@ -12,14 +12,16 @@ jobs:
     - name: version
       run: echo ::set-output name=version::${GITHUB_REF/refs\/tags\//}
       id: version
-    - name: build
-      working-directory: ./deploy
+    - name: install dependencies
+      working-directory: deploy
       run: |
-        curl -L https://get.helm.sh/helm-v3.4.1-linux-amd64.tar.gz |tar xvz
-        mv linux-amd64/helm /usr/bin/helm
-        chmod +x /usr/bin/helm
-        helm package --app-version ${{ steps.version.outputs.version }} logstash-operator
-    - name: release
+        curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
+        chmod 700 get_helm.sh
+        ./get_helm.sh
+    - name: build package
+      working-directory: ./deploy
+      run: helm package --app-version ${{ steps.version.outputs.version }} logstash-operator
+    - name: create release
       uses: actions/create-release@v1
       id: create_release
       with:
