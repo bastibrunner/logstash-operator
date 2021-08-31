@@ -7,4 +7,4 @@ RUN pip3 install -r requirements.txt
 
 COPY . .
 
-CMD [ "kopf", "run" , "logstash-operator.py"]
+CMD [ "kopf", "run" , "--liveness=http://0.0.0.0:80/healthz" "logstash-operator.py"]
