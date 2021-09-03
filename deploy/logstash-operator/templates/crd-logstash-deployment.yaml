@@ -33,6 +33,24 @@ spec:
                     pattern: "^[a-z0-9]+(-[a-z0-9]+)*$"
                   default:
                     - default
+                geoip:
+                  description: If defined, logstash pods will start maxmind geoip
+                   updater container as sidecar container
+                  type: Object
+                    properties:
+                      configSecret:
+                        description: Secret holding the environment variables needed
+                         for running the container.
+                        type: String
+                      image:
+                        description: Docker image to use as sidecar
+                        type: String
+                        default: maxmindinc/geoipupdate
+                      mountPath:
+                        description: Location of shared directory in logstash
+                          container
+                        type: String
+                        default: /usr/share/GeoIP
                 image:
                   type: string
                   default: docker.elastic.co/logstash/logstash:7.14.0

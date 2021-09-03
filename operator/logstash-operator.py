@@ -35,6 +35,7 @@ def create_statefulset_fn(param, spec, name, namespace, logger, **kwargs):
     logstashconfig = spec.get('config')
     image = spec.get('image')
     affinity = spec.get('affinity')
+    geoip = spec.get('geoip')
 
     configconfigmapname = name+"-logstash-operator-config"
     pipelinesconfigmapname = name+"-logstash-operator-pipelines"
@@ -71,7 +72,7 @@ def create_statefulset_fn(param, spec, name, namespace, logger, **kwargs):
     ## Render statefulset manifest
     TEMPLATE_FILE = "statefulset.yaml.j2"
     template = templateEnv.get_template(TEMPLATE_FILE)
-    text = template.render(name=name, replicas=replicas, pipelines=pipelines, image=image, ports=ports, affinity=affinity)
+    text = template.render(name=name, replicas=replicas, pipelines=pipelines, image=image, ports=ports, affinity=affinity, geoip=geoip)
     statefulsetdata = yaml.safe_load(text)
 
     # Create
