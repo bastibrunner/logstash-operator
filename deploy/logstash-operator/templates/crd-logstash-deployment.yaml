@@ -34,13 +34,13 @@ spec:
                   default:
                     - default
                 geoip:
-                  description: If defined, logstash pods will start maxmind geoip
-                   updater container as sidecar container
+                  description: If defined, logstash pods will start maxmind geoip 
+                    updater container as sidecar container
                   type: Object
                     properties:
                       configSecret:
                         description: Secret holding the environment variables needed
-                         for running the container.
+                          for running the container.
                         type: String
                       image:
                         description: Docker image to use as sidecar
