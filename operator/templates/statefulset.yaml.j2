@@ -117,7 +117,12 @@ spec:
       {% if geoip is defined %}
       - name: "geoip-update"
         image: {{ geoip['image'] }}
+        imagePullPolicy: IfNotPresent
         env:
+        - name: GEOIPUPDATE_DB_DIR
+          value: {{ geoip['mountPath'] }}
+        - name: GEOIPUPDATE_CONF_FILE
+          value: {{ geoip['mountPath'] }}/GeoIP.conf
         - name: GEOIPUPDATE_ACCOUNT_ID
           valueFrom:
             secretKeyRef:
