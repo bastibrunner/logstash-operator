@@ -32,7 +32,9 @@ spec:
       securityContext:
         fsGroup: 1000
         runAsUser: 1000
-      affinity: {{ affinity }}
+      affinity: {% if affinity is not defined %}{}{% else %}
+        {{ affinity | indent(8) }}
+      {% endif %}
       terminationGracePeriodSeconds: 120
       volumes:
       - name: geoip

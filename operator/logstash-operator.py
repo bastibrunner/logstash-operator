@@ -34,7 +34,8 @@ def create_statefulset_fn(param, spec, name, namespace, logger, **kwargs):
     pipelines = spec.get('pipelines')
     logstashconfig = spec.get('config')
     image = spec.get('image')
-    affinity = spec.get('affinity')
+    affinity = yaml.dump(spec.get('affinity') ,indent=2)
+    
     geoip = spec.get('geoip')
 
     configconfigmapname = name+"-logstash-operator-config"
