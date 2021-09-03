@@ -28,7 +28,7 @@ rules:
 
   - apiGroups: [ "" ]
     resources: [ configmaps,services ]
-    verbs: [ get,create,patch ]
+    verbs: [ get,create,patch,update ]
 
   - apiGroups: [ apps ]
     resources: [ statefulsets ]
