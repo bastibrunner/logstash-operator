@@ -35,6 +35,8 @@ spec:
       affinity: {{ affinity }}
       terminationGracePeriodSeconds: 120
       volumes:
+      - name: geoip
+        emptyDir: {}
       - name: {{ name }}-config
         configMap:
           name: {{ name }}-logstash-operator-config
@@ -46,7 +48,6 @@ spec:
         configMap:
           name: {{ item }}
       {% endfor %}
-
       containers:
       - name: "logstash"
         securityContext:
@@ -107,3 +108,35 @@ spec:
           - name: "{{ name }}-pipeline-{{ item }}"
             mountPath: /opt/logstash/pipeline-{{ item }}
           {% endfor %}
+          {% if geoip is defined %}
+          - mountPath: {{ geoip['mountPath'] }}
+            name: geoip      
+          {% endif %}
+      {% if geoip is defined %}
+      - name: "geoip-update"
+        image: {{ geoip['image'] }}
+        env:
+        - name: GEOIPUPDATE_ACCOUNT_ID
+          valueFrom:
+            secretKeyRef:
+              name: {{ geoip['configSecret'] }}
+              key: GEOIPUPDATE_ACCOUNT_ID
+        - name: GEOIPUPDATE_LICENSE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ geoip['configSecret'] }}
+              key: GEOIPUPDATE_LICENSE_KEY
+        - name: GEOIPUPDATE_EDITION_IDS
+          valueFrom:
+            secretKeyRef:
+              name: {{ geoip['configSecret'] }}
+              key: GEOIPUPDATE_EDITION_IDS
+        - name: GEOIPUPDATE_FREQUENCY
+          valueFrom:
+            secretKeyRef:
+              name: {{ geoip['configSecret'] }}
+              key: GEOIPUPDATE_FREQUENCY
+        volumeMounts:
+        - mountPath: {{ geoip['mountPath'] }}
+          name: geoip
+      {% endif %}
