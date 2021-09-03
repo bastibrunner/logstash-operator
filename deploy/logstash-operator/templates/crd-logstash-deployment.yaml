@@ -36,7 +36,7 @@ spec:
                 geoip:
                   description: If defined, logstash pods will start maxmind geoip 
                     updater container as sidecar container
-                  type: Object
+                  type: object
                     properties:
                       configSecret:
                         description: Secret holding the environment variables needed
