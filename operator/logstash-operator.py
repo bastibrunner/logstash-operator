@@ -72,7 +72,7 @@ def create_statefulset_fn(param, spec, name, namespace, logger, **kwargs):
             port=item['spec']['service']['port'],
             portname=item['spec']['service']['name'],
             type=item['spec']['service']['type'],
-            annotations=item['spec']['service']['annotations']
+            annotations=item['spec']['service'].get('annotations',None)
         )
         servicedata = yaml.safe_load(text)
         services[servicename]=servicedata
