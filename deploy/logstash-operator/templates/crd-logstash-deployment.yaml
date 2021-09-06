@@ -644,6 +644,15 @@ spec:
                           type: array
                       type: object
                   type: object                  
+                secretMounts:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      mountPath:
+                        type: string
+                      secretName:
+                        type: string
                 config:
                   type: object
                   properties:

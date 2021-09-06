@@ -66,7 +66,13 @@ def create_statefulset_fn(param, spec, name, namespace, logger, **kwargs):
     for item in customobjectsapi_response['items']:
         ports[item['spec']['service']['name']]=item['spec']['service']['port']
         servicename=name+"-"+item['metadata']['name']
-        text = template.render(name=servicename,app=name,port=item['spec']['service']['port'],portname=item['spec']['service']['name'],type=item['spec']['service']['type'])
+        text = template.render(
+            name=servicename,app=name,
+            port=item['spec']['service']['port'],
+            portname=item['spec']['service']['name'],
+            type=item['spec']['service']['type'],
+            annotations=item['spec']['service']['annotaions']
+        )
         servicedata = yaml.safe_load(text)
         services[servicename]=servicedata
 
