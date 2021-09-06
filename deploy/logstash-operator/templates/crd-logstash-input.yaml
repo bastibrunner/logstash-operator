@@ -35,6 +35,15 @@ spec:
                       type: string
                     port:
                       type: integer
+                    annotations:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          value:
+                            type: string
             status:
               type: object
               x-kubernetes-preserve-unknown-fields: true

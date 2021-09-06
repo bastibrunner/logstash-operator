@@ -50,6 +50,11 @@ spec:
         configMap:
           name: {{ item }}
       {% endfor %}
+      {% for item in secretmounts %}
+      - name: {{ name }}-{{ item['secretName'] }}
+        secret:
+          secretName: item['secretName']
+      {% endfor %}
       containers:
       - name: "logstash"
         securityContext:
@@ -114,6 +119,11 @@ spec:
           - mountPath: {{ geoip['mountPath'] }}
             name: geoip      
           {% endif %}
+          {% for item in secretmounts %}
+          - mountPath: {{ item['mountPath'] }}
+            name: {{ name }}-{{ item['secretName'] }}
+          {% endfor %}
+
       {% if geoip is defined %}
       - name: "geoip-update"
         image: {{ geoip['image'] }}
