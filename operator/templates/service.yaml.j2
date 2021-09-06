@@ -5,7 +5,7 @@ metadata:
   {% if annotations != None %}
   annotations:
     {% for annotation in annotations %}
-    {{ annotation.name }}: {{ annotation.value }}
+    {{ annotation.name }}: "{{ annotation.value }}"
     {% endfor %}
   {% endif %}
 
