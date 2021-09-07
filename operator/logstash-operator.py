@@ -86,85 +86,97 @@ def create_statefulset_fn(param, spec, name, namespace, logger, **kwargs):
     # Create
     if param['action'] == 'create':
         ## Create configmap for logstash config
-        kopf.adopt(configdata)
-        api = kubernetes.client.CoreV1Api()
-        obj = api.create_namespaced_config_map(
-            namespace=namespace,
-            body=configdata,
-        )
-        logger.info(f"Created configmap: {obj.metadata.name}")
+        @kopf.subhandler(id="create-logstash-config")
+        def create_logstash_config(configdata=configdata, **_):
+            kopf.adopt(configdata)
+            api = kubernetes.client.CoreV1Api()
+            obj = api.create_namespaced_config_map(
+                namespace=namespace,
+                body=configdata,
+            )
+            logger.info(f"Created configmap: {obj.metadata.name}")
 
         ## Create configmap for logstash pipelines config locations
-        kopf.adopt(pipelinesdata)
-        api = kubernetes.client.CoreV1Api()
-        obj = api.create_namespaced_config_map(
-            namespace=namespace,
-            body=pipelinesdata,
-        )
-        logger.info(f"Created configmap: {obj.metadata.name}")
+        @kopf.subhandler(id="create-pipelines-config")
+        def create_logstash_pipelineconfig(pipelinesdata=pipelinesdata, **_):
+            kopf.adopt(pipelinesdata)
+            api = kubernetes.client.CoreV1Api()
+            obj = api.create_namespaced_config_map(
+                namespace=namespace,
+                body=pipelinesdata,
+            )
+            logger.info(f"Created configmap: {obj.metadata.name}")
 
         ## Crete Statefulset
-        kopf.adopt(statefulsetdata)
-        api = kubernetes.client.AppsV1Api()
-        obj = api.create_namespaced_stateful_set(
-            namespace=namespace,
-            body=statefulsetdata,
-        )
-        logger.info(f"Created Statefulset: {obj.metadata.name}")
+        @kopf.subhandler(id="create-statefulset")
+        def create_logstash_pipelineconfig(statefulsetdata=statefulsetdata, **_):
+            kopf.adopt(statefulsetdata)
+            api = kubernetes.client.AppsV1Api()
+            obj = api.create_namespaced_stateful_set(
+                namespace=namespace,
+                body=statefulsetdata,
+            )
+            logger.info(f"Created Statefulset: {obj.metadata.name}")
 
 
     ## Update 
     if param['action'] == 'update':
-
         ## Update configmap for logstash config
-        kopf.adopt(configdata)
-        api = kubernetes.client.CoreV1Api()
-        obj = api.patch_namespaced_config_map(
-            namespace=namespace,
-            name = configconfigmapname,
-            body=configdata,
-        )
+        @kopf.subhandler(id="update-logstash-config")
+        def create_logstash_config(configdata=configdata, **_):
+            kopf.adopt(configdata)
+            api = kubernetes.client.CoreV1Api()
+            obj = api.patch_namespaced_config_map(
+                namespace=namespace,
+                name = configconfigmapname,
+                body=configdata,
+            )
     
         ## Update configmap for logstash pipelines config locations
-        kopf.adopt(pipelinesdata)
-        api = kubernetes.client.CoreV1Api()
-        obj = api.patch_namespaced_config_map(
-            namespace=namespace,
-            name = pipelinesconfigmapname,
-            body=pipelinesdata,
-        )
-        logger.info(f"Updated pipeline configmap: {obj.metadata.name}")
+        @kopf.subhandler(id="update-pipelines-config")
+        def create_logstash_pipelineconfig(pipelinesdata=pipelinesdata, **_):
+            kopf.adopt(pipelinesdata)
+            api = kubernetes.client.CoreV1Api()
+            obj = api.patch_namespaced_config_map(
+                namespace=namespace,
+                name = pipelinesconfigmapname,
+                body=pipelinesdata,
+            )
+            logger.info(f"Updated pipeline configmap: {obj.metadata.name}")
 
         # Update statefulset
-        api = kubernetes.client.AppsV1Api()
-        obj = api.patch_namespaced_stateful_set(
-            namespace=namespace,
-            name=name,
-            body=statefulsetdata,
-        )
-        logger.info(f"Updated Statefulset: {obj.metadata.name}")
+        @kopf.subhandler(id="update-statefulset")
+        def create_logstash_pipelineconfig(statefulsetdata=statefulsetdata, **_):
+            api = kubernetes.client.AppsV1Api()
+            obj = api.patch_namespaced_stateful_set(
+                namespace=namespace,
+                name=name,
+                body=statefulsetdata,
+            )
+            logger.info(f"Updated Statefulset: {obj.metadata.name}")
 
     # Update or create services
     for servicename,servicedata in services.items():
-        api = kubernetes.client.CoreV1Api()
-        try: 
-            api_response = api.read_namespaced_service(servicename, namespace, pretty="true")
-        except ApiException as e:
-            if (e.status == 404):
-                kopf.adopt(servicedata)
-                obj = api.create_namespaced_service(
+        @kopf.subhandler(id="service-"+servicename)
+        def create_or_update_service(servicename=servicename,servicedata=servicedata, **_):
+            api = kubernetes.client.CoreV1Api()
+            try: 
+                api_response = api.read_namespaced_service(servicename, namespace, pretty="true")
+            except ApiException as e:
+                if (e.status == 404):
+                    kopf.adopt(servicedata)
+                    obj = api.create_namespaced_service(
+                        namespace=namespace,
+                        body=servicedata,
+                    )
+                    logger.info(f"Created service: {obj.metadata.name}")
+            else:
+                obj = api.patch_namespaced_service (
                     namespace=namespace,
+                    name = servicename,
                     body=servicedata,
                 )
-                logger.info(f"Created service: {obj.metadata.name}")
-        else:
-            print(servicedata)
-            obj = api.replace_namespaced_service (
-                namespace=namespace,
-                name = name+"-"+item['metadata']['name'],
-                body=servicedata,
-            )
-            logger.info(f"Updated service: {obj.metadata.name}")
+                logger.info(f"Updated service: {obj.metadata.name}")
 
 
 @kopf.on.create('logstash-pipeline',param={'type':'pipeline','action':'create'})
