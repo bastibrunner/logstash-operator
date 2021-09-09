@@ -81,7 +81,7 @@ def create_statefulset_fn(param, spec, name, namespace, logger, **kwargs):
     ## Render statefulset manifest
     TEMPLATE_FILE = "statefulset.yaml.j2"
     template = templateEnv.get_template(TEMPLATE_FILE)
-    text = template.render(name=name, replicas=replicas, pipelines=pipelines, image=image, ports=ports, affinity=affinity, geoip=geoip, secretmounts=secretmounts)
+    text = template.render(name=name, replicas=replicas, pipelines=pipelines, image=image, ports=ports, affinity=affinity, geoip=geoip, secretmounts=secretmounts, config=logstashconfig)
     statefulsetdata = yaml.safe_load(text)
 
     # Create
