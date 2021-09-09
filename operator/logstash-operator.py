@@ -36,6 +36,7 @@ def create_statefulset_fn(param, spec, name, namespace, logger, **kwargs):
     image = spec.get('image')
     affinity = yaml.dump(spec.get('affinity') ,indent=2)
     secretmounts = spec.get('secretMounts')
+    resources = yaml.dump(spec.get('resources') ,indent=2)
     
     geoip = spec.get('geoip')
 

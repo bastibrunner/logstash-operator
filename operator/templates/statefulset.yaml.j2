@@ -92,13 +92,9 @@ spec:
         - name: {{ name }}
           containerPort: {{ port }}
         {% endfor %}
-        resources:
-          limits:
-            cpu: 1000m
-            memory: 1536Mi
-          requests:
-            cpu: 100m
-            memory: 1536Mi
+        resources:  {% if resources is not defined %}{}{% else %}
+          {{ resources | indent(10) }}
+        {% endif %}
         env:
           - name: LS_JAVA_OPTS
             value: "{{ config['ls_java_opts'] }}"
