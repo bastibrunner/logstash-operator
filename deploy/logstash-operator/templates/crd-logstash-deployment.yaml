@@ -656,6 +656,9 @@ spec:
                 config:
                   type: object
                   properties:
+                    ls_java_opts:
+                      type: string
+                      default: -Xmx1g -Xms1g
                     queue:
                       type: object
                       properties:

@@ -101,7 +101,7 @@ spec:
             memory: 1536Mi
         env:
           - name: LS_JAVA_OPTS
-            value: "-Xmx1g -Xms1g"
+            value: "{{ config['ls_java_opts'] }}"
         volumeMounts:
           - name: "{{ name }}-data"
             mountPath: /usr/share/logstash/data
