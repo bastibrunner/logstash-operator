@@ -38,6 +38,8 @@ def create_statefulset_fn(param, spec, name, namespace, logger, **kwargs):
     secretmounts = spec.get('secretMounts')
     resources = yaml.dump(spec.get('resources') ,indent=2)
     persistenVolume = yaml.dump(spec.get('persistenVolume') ,indent=2)
+    for k,v in logstashconfig.items():
+        logstashconfig[k] = v if type(v) in [str,int,float,bool] else yaml.dump(v) 
     
     geoip = spec.get('geoip')
 
