@@ -34,7 +34,7 @@ data:
     path.data: /usr/share/logstash/data
     #
     # ------------ Pipeline Settings --------------
-    {% if pipeline in config %}
+    {% if "pipeline" in config %}
     pipeline:
       {{ config['pipeline'] | indent(6) }}
     {% endif %}
@@ -129,12 +129,12 @@ data:
     # cloud.auth: elastic:<password>
     #
     # ------------ Queuing Settings --------------
-    {% if queue in config %}
+    {% if "queue" in config %}
     queue:
       {{ config['queue'] | indent(6) }}
     {% endif %}
     # ------------ Dead-Letter Queue Settings --------------
-    {% if dead_letter_queue in config %}
+    {% if "dead_letter_queue" in config %}
     dead_letter_queue:
       {{ config['dead_letter_queue'] | indent(6) }}
     {% endif %}

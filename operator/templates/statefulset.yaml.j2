@@ -19,7 +19,7 @@ spec:
     spec:
       accessModes:
       - {{ persistenVolume['accessMode']}}
-      {% if storageClassName in persistenVolume -%}
+      {% if "storageClassName" in persistenVolume -%}
       storageClassName: {{ persistenVolume['storageClassName']}}
       {%- endif %}
       resources:
