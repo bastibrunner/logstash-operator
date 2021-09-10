@@ -34,44 +34,11 @@ data:
     path.data: /usr/share/logstash/data
     #
     # ------------ Pipeline Settings --------------
-    #
-    # The ID of the pipeline.
-    #
-    # pipeline.id: main
-    #
-    # Set the number of workers that will, in parallel, execute the filters+outputs
-    # stage of the pipeline.
-    #
-    # This defaults to the number of the host's CPU cores.
-    #
-    pipeline.workers: 8
-    #
-    # How many events to retrieve from inputs before sending to filters+workers
-    #
-    pipeline.batch.size: 250
-    #
-    # How long to wait in milliseconds while polling for the next event
-    # before dispatching an undersized batch to filters+outputs
-    #
-    # pipeline.batch.delay: 50
-    #
-    # Force Logstash to exit during shutdown even if there are still inflight
-    # events in memory. By default, logstash will refuse to quit until all
-    # received events have been pushed to the outputs.
-    #
-    # WARNING: enabling this can lead to data loss during shutdown
-    #
-    # pipeline.unsafe_shutdown: false
-    #
-    # Set the pipeline event ordering. Options are "auto" (the default), "true" or "false".
-    # "auto" will  automatically enable ordering if the 'pipeline.workers' setting
-    # is also set to '1'.
-    # "true" will enforce ordering on the pipeline and prevent logstash from starting
-    # if there are multiple workers.
-    # "false" will disable any extra processing necessary for preserving ordering.
-    #
-    pipeline.ordered: auto
-    #
+    {% if pipeline in config %}
+    pipeline:
+      {{ config['pipeline'] | indent(6) }}
+    {% endif %}
+
     # ------------ Pipeline Configuration Settings --------------
     #
     # Where to fetch the pipeline configuration for the main pipeline
@@ -162,73 +129,19 @@ data:
     # cloud.auth: elastic:<password>
     #
     # ------------ Queuing Settings --------------
-    #
-    # Internal queuing model, "memory" for legacy in-memory based queuing and
-    # "persisted" for disk-based acked queueing. Defaults is memory
-    #
-    queue.type: {{ config.queue.type }}
-    #
-    # If using queue.type: persisted, the directory path where the data files will be stored.
-    # Default is path.data/queue
-    #
-    # path.queue:
-    #
-    # If using queue.type: persisted, the page data files size. The queue data consists of
-    # append-only data files separated into pages. Default is 64mb
-    #
-    queue.page_capacity: 64mb
-    #
-    # If using queue.type: persisted, the maximum number of unread events in the queue.
-    # Default is 0 (unlimited)
-    #
-    queue.max_events: 0
-    #
-    # If using queue.type: persisted, the total capacity of the queue in number of bytes.
-    # If you would like more unacked events to be buffered in Logstash, you can increase the
-    # capacity using this setting. Please make sure your disk drive has capacity greater than
-    # the size specified here. If both max_bytes and max_events are specified, Logstash will pick
-    # whichever criteria is reached first
-    # Default is 1024mb or 1gb
-    #
-    queue.max_bytes: 80gb
-    #
-    # If using queue.type: persisted, the maximum number of acked events before forcing a checkpoint
-    # Default is 1024, 0 for unlimited
-    #
-    # queue.checkpoint.acks: 1024
-    #
-    # If using queue.type: persisted, the maximum number of written events before forcing a checkpoint
-    # Default is 1024, 0 for unlimited
-    #
-    # queue.checkpoint.writes: 1024
-    #
-    # If using queue.type: persisted, the interval in milliseconds when a checkpoint is forced on the head page
-    # Default is 1000, 0 for no periodic checkpoint.
-    #
-    # queue.checkpoint.interval: 1000
-    #
+    {% if queue in config %}
+    queue:
+      {{ config['queue'] | indent(6) }}
+    {% endif %}
     # ------------ Dead-Letter Queue Settings --------------
-    # Flag to turn on dead-letter queue.
-    #
-    # dead_letter_queue.enable: false
+    {% if dead_letter_queue in config %}
+    dead_letter_queue:
+      {{ config['dead_letter_queue'] | indent(6) }}
+    {% endif %}
 
-    # If using dead_letter_queue.enable: true, the maximum size of each dead letter queue. Entries
-    # will be dropped if they would increase the size of the dead letter queue beyond this setting.
-    # Default is 1024mb
-    # dead_letter_queue.max_bytes: 1024mb
+    path.dead_letter_queue: /usr/share/logstash/data/dead_letter_queue
+    path.queue: /usr/share/logstash/data/queue
 
-    # If using dead_letter_queue.enable: true, the interval in milliseconds where if no further events eligible for the DLQ
-    # have been created, a dead letter queue file will be written. A low value here will mean that more, smaller, queue files
-    # may be written, while a larger value will introduce more latency between items being "written" to the dead letter queue, and
-    # being available to be read by the dead_letter_queue input when items are are written infrequently.
-    # Default is 5000.
-    #
-    # dead_letter_queue.flush_interval: 5000
-
-    # If using dead_letter_queue.enable: true, the directory path where the data files will be stored.
-    # Default is path.data/dead_letter_queue
-    #
-    # path.dead_letter_queue:
     #
     # ------------ Metrics Settings --------------
     #

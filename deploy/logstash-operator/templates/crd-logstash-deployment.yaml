@@ -689,10 +689,26 @@ spec:
                       default: -Xmx1g -Xms1g
                     queue:
                       type: object
-                      properties:
-                        type:
-                          type: string
-
+                      x-kubernetes-preserve-unknown-fields: true
+                    pipeline:
+                      type: object
+                      x-kubernetes-preserve-unknown-fields: true
+                    dead_letter_queue:
+                      type: object
+                      x-kubernetes-preserve-unknown-fields: true
+                persistenVolume:
+                  description: Persistent Volume used for persistent queue
+                  type: object
+                  properties:
+                    size: 
+                      type: string
+                    storageClassName: 
+                      type: string
+                    accessMode: 
+                      type: string
+                  required:
+                    - size
+                    - accessMode
             status:
               type: object
               x-kubernetes-preserve-unknown-fields: true
