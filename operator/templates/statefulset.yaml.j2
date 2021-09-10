@@ -18,13 +18,13 @@ spec:
       name: {{ name }}-data
     spec:
       accessModes:
-      - {{ persistenVolume['accessMode']}}
-      {% if "storageClassName" in persistenVolume -%}
-      storageClassName: {{ persistenVolume['storageClassName']}}
+      - {{ persistentVolume['accessMode'] }}
+      {% if "storageClassName" in persistentVolume -%}
+      storageClassName: {{ persistentVolume['storageClassName'] }}
       {%- endif %}
       resources:
         requests:
-          storage: {{ persistenVolume['size']}}
+          storage: {{ persistentVolume['size'] }}
   template:
     metadata:
       name: "{{ name }}"

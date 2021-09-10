@@ -696,7 +696,7 @@ spec:
                     dead_letter_queue:
                       type: object
                       x-kubernetes-preserve-unknown-fields: true
-                persistenVolume:
+                persistentVolume:
                   description: Persistent Volume used for persistent queue
                   type: object
                   properties:

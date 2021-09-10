@@ -37,7 +37,7 @@ def create_statefulset_fn(param, spec, name, namespace, logger, **kwargs):
     affinity = yaml.dump(spec.get('affinity') ,indent=2)
     secretmounts = spec.get('secretMounts')
     resources = yaml.dump(spec.get('resources') ,indent=2)
-    persistenVolume = yaml.dump(spec.get('persistenVolume') ,indent=2)
+    persistentVolume = spec.get('persistentVolume')
     for k,v in logstashconfig.items():
         logstashconfig[k] = v if type(v) in [str,int,float,bool] else yaml.dump(v) 
     
@@ -84,7 +84,7 @@ def create_statefulset_fn(param, spec, name, namespace, logger, **kwargs):
     ## Render statefulset manifest
     TEMPLATE_FILE = "statefulset.yaml.j2"
     template = templateEnv.get_template(TEMPLATE_FILE)
-    text = template.render(name=name, replicas=replicas, pipelines=pipelines, image=image, ports=ports, affinity=affinity, geoip=geoip, secretmounts=secretmounts, config=logstashconfig, resources=resources, persistenVolume=persistenVolume)
+    text = template.render(name=name, replicas=replicas, pipelines=pipelines, image=image, ports=ports, affinity=affinity, geoip=geoip, secretmounts=secretmounts, config=logstashconfig, resources=resources, persistentVolume=persistentVolume)
     statefulsetdata = yaml.safe_load(text)
 
     # Create
